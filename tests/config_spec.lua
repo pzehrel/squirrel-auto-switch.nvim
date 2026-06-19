@@ -1,0 +1,37 @@
+local config = require("squirrel_auto_switch.config")
+
+describe("configuration", function()
+  it("provides stable defaults", function()
+    local resolved = config.resolve()
+
+    assert_equal("/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel", resolved.executable)
+    assert_equal("im.rime.inputmethod.Squirrel.Hans", resolved.input_source)
+    assert_true(resolved.auto_activate)
+    assert_equal("ascii", resolved.default_insert_state)
+    assert_true(resolved.restore_on_insert_enter)
+    assert_true(resolved.sync_on_focus)
+    assert_equal(3000, resolved.timeout_ms)
+    assert_true(resolved.notify)
+    assert_false(resolved.debug)
+  end)
+
+  it("normalizes language aliases", function()
+    assert_equal("ascii", config.resolve({ default_insert_state = "english" }).default_insert_state)
+    assert_equal("nascii", config.resolve({ default_insert_state = "chinese" }).default_insert_state)
+  end)
+
+  it("rejects invalid states", function()
+    local ok = pcall(config.resolve, { default_insert_state = "unknown" })
+    assert_false(ok)
+  end)
+
+  it("rejects non-positive timeouts", function()
+    local ok = pcall(config.resolve, { timeout_ms = 0 })
+    assert_false(ok)
+  end)
+
+  it("rejects unknown options", function()
+    local ok = pcall(config.resolve, { typo_option = true })
+    assert_false(ok)
+  end)
+end)
