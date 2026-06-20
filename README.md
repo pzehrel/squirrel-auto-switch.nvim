@@ -64,8 +64,8 @@ require("squirrel_auto_switch").setup({
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `executable` | `string` | `"/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel"` | Squirrel CLI 的完整路径。插件通过它执行状态查询、ASCII 切换和输入源选择；路径不存在或不可执行时，自动切换不会生效。 |
-| `input_source` | `string` | `"im.rime.inputmethod.Squirrel.Hans"` | macOS 中的 Squirrel 输入源 ID。仅在 `auto_activate = true` 时使用；不同版本或安装方式的 ID 可能不同。 |
+| `executable` | `string` | <code>/Library/Input<wbr> Methods/Squirrel.app/<wbr>Contents/MacOS/<wbr>Squirrel</code> | Squirrel CLI 的完整路径。插件通过它执行状态查询、ASCII 切换和输入源选择；路径不存在或不可执行时，自动切换不会生效。 |
+| `input_source` | `string` | <code>im.rime.<wbr>inputmethod.<wbr>Squirrel.Hans</code> | macOS 中的 Squirrel 输入源 ID。仅在 `auto_activate = true` 时使用；不同版本或安装方式的 ID 可能不同。 |
 | `auto_activate` | `boolean` | `true` | 每次设置 `ascii`／`nascii` 前，先确保当前 macOS 输入源是 Squirrel。选择失败时会尝试启用输入源并重试。关闭后，插件只操作 Squirrel 的 ASCII 状态，不会主动从其他输入法切到 Squirrel。 |
 | `default_insert_state` | `string` | `"ascii"` | 当前 Neovim 会话还没有记忆到 Insert 状态时，第一次进入 Insert／Replace 使用的状态。支持 `"ascii"`、`"nascii"`，也支持更直观的别名 `"english"`、`"chinese"`。 |
 | `restore_on_insert_enter` | `boolean` | `true` | 进入 Insert／Replace 时是否恢复上一次编辑状态。设为 `false` 后，插件仍会在离开 Insert 时记忆状态并切到 ASCII，但进入 Insert 时不主动切换。 |
