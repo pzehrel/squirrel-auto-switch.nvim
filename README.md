@@ -179,8 +179,28 @@ require("squirrel_auto_switch").setup({
 
 ## 开发
 
+完整检查需要安装：
+
+- [StyLua](https://github.com/JohnnyMorganz/StyLua)
+- [Luacheck](https://github.com/lunarmodules/luacheck)
+- [actionlint](https://github.com/rhysd/actionlint)
+
+运行测试：
+
 ```sh
 make test
+```
+
+检查 Lua 格式、静态分析、GitHub Actions Workflow 和测试：
+
+```sh
+make check
+```
+
+自动格式化 Lua：
+
+```sh
+make format
 ```
 
 测试使用隔离的最小 Neovim 配置，不会加载或修改本机配置。

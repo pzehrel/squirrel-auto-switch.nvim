@@ -1,4 +1,10 @@
 ---@alias SquirrelAutoSwitchState "ascii"|"nascii"
+---@alias SquirrelAutoSwitchGetCallback fun(state: SquirrelAutoSwitchState|nil, err: string|nil)
+---@alias SquirrelAutoSwitchSetCallback fun(ok: boolean, err: string|nil)
+---@alias SASBackend SquirrelAutoSwitchBackend
+---@alias SASState SquirrelAutoSwitchState
+---@alias SASSetCallback SquirrelAutoSwitchSetCallback
+---@alias SquirrelAutoSwitchSet fun(self: SASBackend, state: SASState, callback: SASSetCallback)
 
 ---@class SquirrelAutoSwitchConfig
 ---@field executable string
@@ -14,7 +20,7 @@
 
 ---@class SquirrelAutoSwitchBackend
 ---@field available fun(self: SquirrelAutoSwitchBackend): boolean
----@field get fun(self: SquirrelAutoSwitchBackend, callback: fun(state: SquirrelAutoSwitchState|nil, err: string|nil))
----@field set fun(self: SquirrelAutoSwitchBackend, state: SquirrelAutoSwitchState, callback: fun(ok: boolean, err: string|nil))
+---@field get fun(self: SquirrelAutoSwitchBackend, callback: SquirrelAutoSwitchGetCallback)
+---@field set SquirrelAutoSwitchSet
 
 return {}

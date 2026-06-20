@@ -17,7 +17,7 @@ local function fake_backend(initial_state)
     fail_set = false,
   }
 
-  function backend:available()
+  function backend.available()
     return true
   end
 

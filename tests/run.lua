@@ -1,13 +1,11 @@
 local total = 0
 local failed = 0
-local current_suite = ""
 
 local function inspect(value)
   return vim.inspect(value)
 end
 
 function _G.describe(name, fn)
-  current_suite = name
   io.write("\n" .. name .. "\n")
   local ok, err = xpcall(fn, debug.traceback)
   if not ok then

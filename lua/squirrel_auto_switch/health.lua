@@ -47,10 +47,12 @@ function M.check()
 
   report("ok", "Squirrel CLI is executable")
 
-  local result = vim.system({ config.executable, "--getascii" }, {
-    text = true,
-    timeout = config.timeout_ms,
-  }):wait()
+  local result = vim
+    .system({ config.executable, "--getascii" }, {
+      text = true,
+      timeout = config.timeout_ms,
+    })
+    :wait()
   local output = (result.stdout or ""):gsub("%s+$", "")
 
   if result.code ~= 0 then

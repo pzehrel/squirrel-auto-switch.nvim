@@ -11,7 +11,7 @@ function M.new(config, notifier, runner)
 
   local backend = {}
 
-  function backend:available()
+  function backend.available()
     return vim.fn.executable(config.executable) == 1
   end
 
@@ -26,7 +26,7 @@ function M.new(config, notifier, runner)
   end
 
   function backend:get(callback)
-    if not self:available() then
+    if not self.available() then
       unavailable(callback, false)
       return
     end
@@ -80,7 +80,7 @@ function M.new(config, notifier, runner)
       return
     end
 
-    if not self:available() then
+    if not self.available() then
       unavailable(callback, true)
       return
     end

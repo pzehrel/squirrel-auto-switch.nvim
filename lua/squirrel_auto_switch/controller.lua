@@ -4,7 +4,7 @@ local M = {}
 ---@param backend SquirrelAutoSwitchBackend
 ---@param notifier table
 function M.new(config, backend, notifier)
-  local self = {
+  local controller = {
     enabled = true,
     actual_state = nil,
     target_state = nil,
@@ -15,10 +15,10 @@ function M.new(config, backend, notifier)
   }
 
   local function is_active(token)
-    return self.enabled and token == self.generation
+    return controller.enabled and token == controller.generation
   end
 
-  function self:_drain()
+  function controller:_drain()
     if self.running or not self.enabled then
       return
     end
@@ -41,7 +41,7 @@ function M.new(config, backend, notifier)
     end, task.token)
   end
 
-  function self:_enqueue(name, operation)
+  function controller:_enqueue(name, operation)
     if not self.enabled then
       return
     end
@@ -54,7 +54,7 @@ function M.new(config, backend, notifier)
     self:_drain()
   end
 
-  function self:_set_state(state, force, done, token)
+  function controller:_set_state(state, force, done, token)
     if not is_active(token) then
       done()
       return
@@ -79,7 +79,7 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:_get_state(callback, done, token)
+  function controller:_get_state(callback, done, token)
     if not is_active(token) then
       done()
       return
@@ -98,13 +98,13 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:on_start()
+  function controller:on_start()
     self:_enqueue("start", function(done, token)
       self:_set_state("ascii", true, done, token)
     end)
   end
 
-  function self:on_insert_enter()
+  function controller:on_insert_enter()
     if not config.restore_on_insert_enter then
       return
     end
@@ -115,7 +115,7 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:on_insert_leave()
+  function controller:on_insert_leave()
     self:_enqueue("insert-leave", function(done, token)
       backend:get(function(state, err)
         if not is_active(token) then
@@ -135,7 +135,7 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:on_focus_gained(insert_like)
+  function controller:on_focus_gained(insert_like)
     if not config.sync_on_focus then
       return
     end
@@ -157,7 +157,7 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:on_focus_lost()
+  function controller:on_focus_lost()
     self:_enqueue("focus-lost", function(done, token)
       if is_active(token) then
         self.actual_state = nil
@@ -166,7 +166,7 @@ function M.new(config, backend, notifier)
     end)
   end
 
-  function self:sync(insert_like)
+  function controller:sync(insert_like)
     if insert_like then
       self:on_insert_enter()
     else
@@ -177,7 +177,7 @@ function M.new(config, backend, notifier)
     end
   end
 
-  function self:enable()
+  function controller:enable()
     if self.enabled then
       return
     end
@@ -186,7 +186,7 @@ function M.new(config, backend, notifier)
     self:_drain()
   end
 
-  function self:disable()
+  function controller:disable()
     if not self.enabled then
       return
     end
@@ -196,7 +196,7 @@ function M.new(config, backend, notifier)
     self.target_state = nil
   end
 
-  function self:status()
+  function controller:status()
     return {
       enabled = self.enabled,
       actual_state = self.actual_state,
@@ -207,7 +207,7 @@ function M.new(config, backend, notifier)
     }
   end
 
-  return self
+  return controller
 end
 
 return M
