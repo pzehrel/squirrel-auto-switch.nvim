@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check Lua formatting
         uses: JohnnyMorganz/stylua-action@v5
@@ -56,7 +56,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
@@ -65,4 +65,4 @@ jobs:
           neovim: true
 
       - name: Run tests
-        run: make check
+        run: make test
