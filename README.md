@@ -43,40 +43,73 @@
 
 ## 配置
 
+下面展示全部配置项。所有参数都可以省略，未提供时使用表格中的默认值。
+
 ```lua
 require("squirrel_auto_switch").setup({
-  -- Squirrel CLI 路径
   executable = "/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel",
-
-  -- macOS 中的 Squirrel 输入源 ID
   input_source = "im.rime.inputmethod.Squirrel.Hans",
-
-  -- 设置 ascii/nascii 前自动选择 Squirrel 输入源
   auto_activate = true,
-
-  -- 第一次进入 Insert 时使用的状态
-  -- 支持 "ascii"、"nascii"、"english"、"chinese"
   default_insert_state = "ascii",
-
-  -- 进入 Insert／Replace 时恢复上一次状态
   restore_on_insert_enter = true,
-
-  -- 处理 FocusGained／FocusLost
   sync_on_focus = true,
-
-  -- 单次 CLI 调用超时
   timeout_ms = 3000,
-
-  -- 显示错误通知
   notify = true,
-
-  -- 显示调试日志
   debug = false,
-
-  -- 相同错误通知的节流时间
   error_throttle_ms = 30000,
 })
 ```
+
+### 参数说明
+
+| 参数 | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `executable` | `string` | `"/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel"` | Squirrel CLI 的完整路径。插件通过它执行状态查询、ASCII 切换和输入源选择；路径不存在或不可执行时，自动切换不会生效。 |
+| `input_source` | `string` | `"im.rime.inputmethod.Squirrel.Hans"` | macOS 中的 Squirrel 输入源 ID。仅在 `auto_activate = true` 时使用；不同版本或安装方式的 ID 可能不同。 |
+| `auto_activate` | `boolean` | `true` | 每次设置 `ascii`／`nascii` 前，先确保当前 macOS 输入源是 Squirrel。选择失败时会尝试启用输入源并重试。关闭后，插件只操作 Squirrel 的 ASCII 状态，不会主动从其他输入法切到 Squirrel。 |
+| `default_insert_state` | `string` | `"ascii"` | 当前 Neovim 会话还没有记忆到 Insert 状态时，第一次进入 Insert／Replace 使用的状态。支持 `"ascii"`、`"nascii"`，也支持更直观的别名 `"english"`、`"chinese"`。 |
+| `restore_on_insert_enter` | `boolean` | `true` | 进入 Insert／Replace 时是否恢复上一次编辑状态。设为 `false` 后，插件仍会在离开 Insert 时记忆状态并切到 ASCII，但进入 Insert 时不主动切换。 |
+| `sync_on_focus` | `boolean` | `true` | 是否监听 Neovim 窗口焦点变化。Normal 模式重新获得焦点时会强制同步到 ASCII；Insert／Replace 重新获得焦点时只读取并记忆当前状态，不覆盖用户选择。关闭后不注册 `FocusGained` 和 `FocusLost` 自动命令。 |
+| `timeout_ms` | `integer` | `3000` | 每次 Squirrel CLI 调用的超时时间，单位为毫秒。超时会被视为本次操作失败，但不会阻塞或中断 Neovim。必须是正整数。 |
+| `notify` | `boolean` | `true` | 是否通过 `vim.notify()` 显示 CLI 不存在、查询失败、切换失败等运行时错误。关闭后插件静默降级；健康检查仍可用于排查问题。 |
+| `debug` | `boolean` | `false` | 是否输出调试通知，包括实际执行的 Squirrel CLI 命令。通常只在排查路径、输入源或切换时序问题时开启。`notify = false` 时调试通知也不会显示。 |
+| `error_throttle_ms` | `integer` | `30000` | 相同错误通知的最小间隔，单位为毫秒，用于防止模式快速切换时重复刷屏。设为 `0` 可关闭节流；必须是非负整数。 |
+
+### 输入状态的含义
+
+插件控制的是 Squirrel 内部状态，而不是两个独立的 macOS 输入法：
+
+| 配置值 | Squirrel CLI | 含义 |
+|---|---|---|
+| `"ascii"`／`"english"` | `--ascii` | 开启 Squirrel ASCII 模式，直接输入英文字符 |
+| `"nascii"`／`"chinese"` | `--nascii` | 关闭 Squirrel ASCII 模式，使用当前 Rime 方案输入 |
+
+`"english"` 和 `"chinese"` 只用于配置可读性，插件内部会分别规范化为 `"ascii"` 和 `"nascii"`。
+
+### `auto_activate` 的影响
+
+默认启用 `auto_activate` 是为了处理这样的场景：用户在其他应用中切换到了 ABC、搜狗输入法或另一个 macOS 输入源，然后返回 Neovim。此时单独执行 Squirrel 的 `--ascii` 可能无法影响当前输入窗口，因此插件会先选择配置的 Squirrel 输入源。
+
+如果你希望保留当前系统输入源，不允许插件主动切回 Squirrel，可以关闭它：
+
+```lua
+require("squirrel_auto_switch").setup({
+  auto_activate = false,
+})
+```
+
+关闭后需要确保 Squirrel 本身已经是当前输入源，否则 `--ascii`／`--nascii` 可能不会产生预期效果。
+
+### Insert 状态如何记忆
+
+`default_insert_state` 只负责“尚无历史记录”的首次进入：
+
+1. 第一次进入 Insert 时使用 `default_insert_state`。
+2. 用户可以在 Insert 中手动切换中文或英文。
+3. 离开 Insert 时，插件查询真实状态并将其记录。
+4. 后续进入 Insert 时恢复记录值，不再使用默认值。
+
+状态按整个 Neovim 实例记忆，不区分 buffer、window 或 tab，并且不会跨 Neovim 重启持久化。
 
 ## 命令
 
